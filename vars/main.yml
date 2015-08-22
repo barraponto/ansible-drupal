@@ -1,0 +1,37 @@
+---
+
+# Configuration for php5-fpm pool
+drupal_php5_pool:
+  enabled: True
+  name: 'drupal'
+  user: '{{ drupal_user }}'
+  group: '{{ drupal_group }}'
+
+# nginx configuration - PHP5 upstream
+drupal_nginx_upstream_php5:
+  enabled: True
+  name: 'php5_drupal'
+  type: 'php5'
+  php5: 'drupal'
+
+# nginx configuration - delete_drupal
+drupal_nginx_server:
+  by_role: 'debops.drupal'
+  enabled: True
+  type: 'php5'
+  name: '{{ drupal_domain }}'
+  root: '{{ drupal_install_path + "/html" }}'
+  filename: 'debops.drupal'
+  access_policy: '{{ drupal_nginx_access_policy }}'
+  auth_basic_realm: '{{ drupal_nginx_auth_realm }}'
+  php5: 'php5_drupal'
+
+  ## XXX TODO REVIEW LATER
+  location:
+    '@drupal': |
+      rewrite ^api/v0(.*)$ /api_v0.php/$1 last;
+      rewrite ^(.+)$ /index.php/$1 last;
+
+    '/': |
+      try_files $uri $uri/ @drupal;
+

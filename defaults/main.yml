@@ -1,0 +1,441 @@
+---
+# Default variables
+# =================
+
+# .. contents:: Sections
+#    :local:
+#
+# -------------------
+#   System packages
+# -------------------
+
+# .. envvar:: drupal_base_packages
+#
+# List of base packages required by drupal.
+drupal_base_packages: []
+
+
+# .. envvar:: delete_drupal_monitoring_packages
+#
+# List of monitoring packages to install (some distributions didn't rename the
+# old packages and they need overrides).
+delete_drupal_monitoring_packages: '{{ delete_drupal_monitoring_packages_map[ansible_distribution]
+                                  | default([ "monitoring-plugins" ]) }}'
+
+
+# .. envvar:: delete_drupal_monitoring_packages_map
+#
+# Map of monitoring packages for different distributions.
+delete_drupal_monitoring_packages_map:
+  'Ubuntu': [ 'nagios-plugins' ]
+
+
+# .. envvar:: delete_drupal_php5_packages
+#
+# List of PHP5 packages required by delete_drupal
+drupal_php5_packages: [ 'php5-mysql', 'php5-gd', 'php5-json' ]
+
+
+# .. envvar:: drupal_packages
+#
+# List of additional packages installed with delete_drupal.
+drupal_packages: []
+
+
+# ---------------------------
+#   Webserver configuration
+# ---------------------------
+
+# .. envvar:: drupal_dependencies
+#
+# Allow the role to manage its own role dependencies.
+drupal_dependencies: True
+
+
+# .. envvar:: drupal_domain
+#
+# FQDN address of the delete_drupal webpage, configured in ``nginx``.
+drupal_domain: [ 'drupal.{{ ansible_domain }}' ]
+
+
+# .. envvar:: drupal_nginx_auth_realm
+#
+# Text displayed in the nginx HTTP Auth window when access policy is enabled.
+drupal_nginx_auth_realm: 'Drupal access is restricted'
+
+
+# .. envvar:: drupal_nginx_access_policy
+#
+# Name of the "nginx access policy" for drupal webpage. See ``debops.nginx``
+# Ansible role for more details.
+drupal_nginx_access_policy: ''
+
+
+# .. envvar:: drupal_webserver_user
+#
+# Name of the webserver user account which will be granted read only access to
+# the delete_drupal application directory.
+drupal_webserver_user: '{{ ansible_local.nginx.user
+  if (ansible_local|d() and ansible_local.nginx|d() and
+  ansible_local.nginx.user|d())
+  else "www-data" }}'
+
+
+# ----------------------------------------
+#   Application user, group, directories
+# ----------------------------------------
+
+# .. envvar:: drupal_user
+#
+# Name of the system user account for delete_drupal application.
+drupal_user: 'drupal'
+
+
+# .. envvar:: drupal_group
+#
+# Name of the system group for delete_drupal application.
+drupal_group: 'drupal'
+
+
+# .. envvar:: drupal_shell
+#
+# Shell configured on delete_drupal account.
+drupal_shell: '/bin/bash'
+
+
+# .. envvar:: drupal_home
+#
+# Home directory of the drupal application.
+drupal_home: '{{
+  (ansible_local.nginx.www
+  if (ansible_local|d() and ansible_local.nginx|d() and
+  ansible_local.nginx.www|d())
+  else "/srv/www") + "/" + drupal_user }}'
+
+
+# .. envvar:: drupal_install_path
+#
+# Path where delete_drupal application source will be installed, this directory
+# should be readable by the webserver.
+drupal_install_path: '{{ drupal_home + "/sites/drupal" }}'
+
+
+# .. envvar:: drupal_files_path
+#
+# Path where drupal site public files are stored, including caches.
+drupal_files_path: '{{ drupal_install_path + "/sites/default/files" }}'
+
+
+# .. envvar:: drupal_private_files_path
+#
+# Path where delete_drupal application data is stored, this directory should be set
+# outside of the webserver root directory.
+drupal_private_files_path: '{{ drupal_home + "/files/drupal" }}'
+
+
+# --------------------
+#   delete_drupal sources
+# --------------------
+
+# .. envvar:: drupal_install_repo
+#
+# URL of the delete_drupal git repository.
+drupal_install_repo: 'http://git.drupal.org/project/drupal.git'
+
+
+# .. envvar:: drupal_install_version
+#
+# Name of the git branch to install.
+drupal_install_version: '7.39'
+
+
+# .. envvar:: delete_drupal_update
+#
+# Enable or disable daily upgrades pulled from delete_drupal ``git`` repository.
+delete_drupal_update: True
+
+
+# --------------------------
+#   Database configuration
+# --------------------------
+
+# .. envvar:: delete_drupal_database_server
+#
+# FQDN address of the MariaDB database host; it will be configured by
+# ``debops.mariadb`` role.
+delete_drupal_database_server: '{{ ansible_local.mariadb.server }}'
+
+
+# .. envvar:: drupal_database_user
+#
+# MariaDB database user to use by delete_drupal.
+drupal_database_user: 'drupal'
+
+
+# .. envvar:: drupal_database_name
+#
+# Name of the MariaDB database to use by drupal.
+drupal_database_name: 'drupal'
+
+
+# .. envvar:: delete_drupal_database_password
+#
+# MariaDB database password to delete_drupal account.
+delete_drupal_database_password: "{{
+  lookup('password', secret + '/mariadb/' +
+  ansible_local.mariadb.delegate_to +
+  '/credentials/' + drupal_database_user +
+  '/password length=48') }}"
+
+
+# -----------------------------
+#   Application configuration
+# -----------------------------
+
+# .. envvar:: delete_drupal_admin_accounts
+#
+# Names of accounts that will be created in delete_drupal database. It's preferable
+# that these accounts correspond to UNIX accounts on the delete_drupal host, see
+# ``drupal_home_snmp_conf`` variable.
+#
+# Passwords will be automatically stored in ``secret/`` directory (see
+# ``debops.secret`` role for more details).
+delete_drupal_admin_accounts: [ '{{ ansible_ssh_user
+                               if ansible_ssh_user != "root"
+                               else lookup("env", "USER") }}' ]
+
+
+# .. envvar:: delete_drupal_cron_threads
+#
+# Number of delete_drupal poller threads run by ``cron``.
+delete_drupal_cron_threads: '{{ (ansible_processor_cores | int * 4) }}'
+
+
+# -------------------------------
+#   Web interface configuration
+# -------------------------------
+
+# .. envvar:: delete_drupal_show_services
+#
+# Enable or disable "Services" tab in delete_drupal interface.
+delete_drupal_show_services: True
+
+
+# .. envvar:: delete_drupal_site_style
+#
+# CSS style to use in delete_drupal UI, either ``light`` or ``dark``.
+delete_drupal_site_style: 'light'
+
+
+# .. envvar:: delete_drupal_network_map_items
+#
+# List of data types to source for the network map:
+#
+# - ``xdp``: data gathered from LLDP, CDP, and similar protocols;
+#
+# - ``mac``: data gathered from ARP tables;
+#
+delete_drupal_network_map_items: [ 'xdp' ]
+
+
+# .. envvar:: delete_drupal_front_page
+#
+# Name of the ``.php`` page that is displayed by default.
+delete_drupal_front_page: 'pages/front/default.php'
+
+
+# .. envvar:: delete_drupal_public_status
+#
+# Enable or disable a public status page with information about monitored
+# devices, which does not require authentication.
+delete_drupal_public_status: False
+
+
+# ------------------------
+#   Device autodiscovery
+# ------------------------
+
+# .. envvar:: delete_drupal_devices
+#
+# List of FQDN hostnames of devices (servers, switches, routers, printers,
+# etc.) which should be added to delete_drupal by the role. By default delete_drupal will
+# add its own host.
+delete_drupal_devices: [ '{{ delete_drupal_own_hostname }}' ]
+
+
+# .. envvar:: delete_drupal_own_hostname
+#
+# Name of the host on which delete_drupal is installed.
+delete_drupal_own_hostname: '{{ ansible_fqdn }}'
+
+
+# .. envvar:: delete_drupal_discover_services
+#
+# Enable or disable SNMP service discovery on servers.
+delete_drupal_discover_services: True
+
+
+# .. envvar:: delete_drupal_autodiscover_networks
+#
+# List of CIDR networks which will be automatically scanned by delete_drupal to find
+# new SNMP devices.
+delete_drupal_autodiscover_networks: [ '10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16' ]
+
+
+# .. envvar:: delete_drupal_ignore_mount_string
+#
+# List of partial names of mount points which delete_drupal should ignore.
+delete_drupal_ignore_mount_string: [ 'cgroup', '/run/', '/dev/shm' ]
+
+
+# --------------------------------------
+#   Simple Network Management Protocol
+# --------------------------------------
+
+# .. envvar:: delete_drupal_snmp_version
+#
+# Which SNMP protocol version is used by default to authenticate to SNMP
+# devices (``v1``, ``v2c``, ``v3``).
+delete_drupal_snmp_version: 'v3'
+
+
+# .. envvar:: delete_drupal_snmp_communities
+#
+# List of SNMP v1/v2c community strings to try while authenticating to SNMP
+# devices.
+delete_drupal_snmp_communities: [ 'public' ]
+
+
+# .. envvar:: delete_drupal_snmp_credentials
+#
+# List of SNMP v3 credentials to try while authenticating to SNMP devices. Each
+# entry is a dict with various parameters, see :ref:`delete_drupal_snmp_credentials`
+# for more details.
+delete_drupal_snmp_credentials: [ '{{ delete_drupal_snmp_credentials_default }}' ]
+
+
+# .. envvar:: delete_drupal_snmp_credentials_default
+#
+# SNMPv3 credentials entry with configuration used by default by
+# ``debops.snmpd`` role to configure SNMP service on servers.
+delete_drupal_snmp_credentials_default:
+  authname:   '{{ lookup("password", secret + "/snmp/credentials/agent/username") }}'
+  authpass:   '{{ lookup("password", secret + "/snmp/credentials/agent/password") }}'
+  cryptopass: '{{ lookup("password", secret + "/snmp/credentials/agent/password") }}'
+  authlevel:  'authPriv'
+  authalgo:   'SHA'
+  cryptoalgo: 'AES'
+
+
+# .. envvar:: drupal_home_snmp_conf
+#
+# List of UNIX accounts for which ``~/.snmp/snmp.conf`` will be generated. By
+# default it's a ``root`` account, delete_drupal account and admin accounts that
+# exist on the host.
+drupal_home_snmp_conf: '{{ ([ "root", drupal_user ] +
+                             delete_drupal_admin_accounts|d([])) | unique }}'
+
+
+# --------------------------------
+#   delete_drupal config.php contents
+# --------------------------------
+
+# .. envvar:: delete_drupal_configuration_maps
+#
+# Main list with dictionaries that hold the delete_drupal configuration generated by
+# ``config.php`` template. See :ref:`delete_drupal_configuration_maps` for more
+# details.
+delete_drupal_configuration_maps:
+  - '{{ delete_drupal_config_database }}'
+  - '{{ delete_drupal_config_authentication }}'
+  - '{{ delete_drupal_config_installation }}'
+  - '{{ delete_drupal_config_memcached }}'
+  - '{{ delete_drupal_config_webui }}'
+  - '{{ delete_drupal_config_autodiscovery }}'
+  - '{{ delete_drupal_config_snmp }}'
+  - '{{ delete_drupal_config_custom }}'
+
+
+# .. envvar:: delete_drupal_config_database
+#
+# delete_drupal database configuration.
+delete_drupal_config_database:
+  comment: 'Database configuration'
+  'db_host': '{{ delete_drupal_database_server }}'
+  'db_name': '{{ drupal_database_name }}'
+  'db_user': '{{ drupal_database_user }}'
+  'db_pass': '{{ delete_drupal_database_password }}'
+
+
+# .. envvar:: delete_drupal_config_authentication
+#
+# delete_drupal authentication configuration.
+delete_drupal_config_authentication:
+  comment: 'Authentication configuration'
+  'auth_mechanism': 'mysql'
+
+
+# .. envvar:: delete_drupal_config_installation
+#
+# delete_drupal installation configuration.
+delete_drupal_config_installation:
+  comment: 'Application directories, installation'
+  'install_dir': '{{ drupal_install_path }}'
+  'rrd_dir':     '{{ delete_drupal_rrd_dir }}'
+  'log_dir':     '{{ delete_drupal_log_dir }}'
+  'update':      '{{ delete_drupal_update }}'
+
+
+# .. envvar:: delete_drupal_config_memcached
+#
+# delete_drupal ``memcached`` configuration.
+delete_drupal_config_memcached:
+  comment: 'Memcached configuration'
+  'memcached':
+    'enable': '{{ delete_drupal_memcached }}'
+    'host':   '{{ delete_drupal_memcached_host }}'
+    'port':   '{{ delete_drupal_memcached_port }}'
+
+
+# .. envvar:: delete_drupal_config_webui
+#
+# delete_drupal web interface configuration.
+delete_drupal_config_webui:
+  comment: 'Web interface configuration'
+  'site_style':          '{{ delete_drupal_site_style }}'
+  'front_page':          '{{ delete_drupal_front_page }}'
+  'public_status':       '{{ delete_drupal_public_status }}'
+  'show_services':       '{{ delete_drupal_show_services }}'
+  'network_map_items':   { array: '{{ delete_drupal_network_map_items }}' }
+
+
+# .. envvar:: delete_drupal_config_autodiscovery
+#
+# delete_drupal autodiscovery configuration.
+delete_drupal_config_autodiscovery:
+  comment: 'Autodiscovery configuration'
+  'own_hostname':        '{{ delete_drupal_own_hostname }}'
+  'discover_services':   '{{ delete_drupal_discover_services }}'
+  'nets':                '{{ delete_drupal_autodiscover_networks }}'
+  'ignore_mount_string': '{{ delete_drupal_ignore_mount_string }}'
+  'auth_ldap_groups':
+    'admin':
+      'level': 7
+
+
+# .. envvar:: delete_drupal_config_snmp
+#
+# delete_drupal SNMP configuration.
+delete_drupal_config_snmp:
+  comment: 'SNMP configuration'
+  'snmp':
+    'version': '{{ delete_drupal_snmp_version }}'
+    'community': { array: '{{ delete_drupal_snmp_communities }}' }
+    'v3': '{{ delete_drupal_snmp_credentials }}'
+
+
+# .. envvar:: delete_drupal_config_custom
+#
+# Custom delete_drupal configuration.
+delete_drupal_config_custom: {}
+

@@ -1,0 +1,92 @@
+---
+
+- name: Install required packages
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+    install_recommends: False
+  with_flattened:
+    - drupal_base_packages
+    - drupal_packages
+
+
+# ---- Environment ----
+
+- name: Create drupal group
+  group:
+    name: '{{ drupal_group }}'
+    system: True
+    state: 'present'
+
+- name: Create drupal user
+  user:
+    name: '{{ drupal_user }}'
+    group: '{{ drupal_group }}'
+    home: '{{ drupal_home }}'
+    shell: '{{ drupal_shell }}'
+    comment: 'drupal'
+    system: True
+    state: 'present'
+
+
+# ---- Deployment ----
+
+- name: Clone drupal source from deploy server
+  git:
+    repo: '{{ drupal_install_repo }}'
+    dest: '{{ drupal_install_path }}'
+    version: '{{ drupal_install_version }}'
+    update: True
+  sudo_user: '{{ drupal_user }}'
+  register: drupal_register_source
+  tags: [ 'role::drupal:source' ]
+
+- name: Update drupal home directory permissions
+  file:
+    path: '{{ drupal_home }}'
+    state: 'directory'
+    owner: '{{ drupal_user }}'
+    group: '{{ drupal_webserver_user }}'
+    mode: '0750'
+
+- name: Make sure required directories exist
+  file:
+    dest: '{{ item }}'
+    state: 'directory'
+    owner: '{{ drupal_user }}'
+    group: '{{ drupal_webserver_user }}'
+    mode: '0750'
+  with_items:
+    - '{{ drupal_files_path }}'
+    - '{{ drupal_private_files_path }}'
+  tags: [ 'role::drupal:config' ]
+
+
+# ---- Configuration ----
+
+- name: Create drupal database
+  mysql_db:
+    name: '{{ drupal_database_name }}'
+    state: 'present'
+  delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
+  register: drupal_register_database_status
+  tags: [ 'role::drupal:database' ]
+
+#- name: Configure drupal
+#  template:
+#    src: 'srv/www/sites/public/config.php.j2'
+#    dest: '{{ drupal_install_path + "/config.php" }}'
+#    owner: '{{ drupal_user }}'
+#    group: '{{ drupal_group }}'
+#    mode: '0600'
+#  tags: [ 'role::drupal:config', 'role::drupal:database' ]
+
+#- name: Configure cron tasks
+#  template:
+#    src: 'etc/cron.d/drupal.j2'
+#    dest: '/etc/cron.d/drupal'
+#    owner: 'root'
+#    group: 'root'
+#    mode: '0644'
+#  tags: [ 'role::drupal:config' ]
+
