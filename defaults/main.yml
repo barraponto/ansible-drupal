@@ -27,10 +27,12 @@ drupal_php5_packages: [ 'php5-mysql', 'php5-gd', 'php5-json' ]
 drupal_packages: []
 
 
-# .. envvar:: drupal_system_packages
+# .. envvar:: drupal_composer_packages
 #
-# List of additional packages installed with drupal.
-drupal_system_packages: [ 'drush/drush:7.*' ]
+# List of additional composer packages installed with drupal.
+drupal_composer_packages:
+  - name: 'drush/drush'
+    release: '7.*'
 
 
 # ---------------------------
