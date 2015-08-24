@@ -11,6 +11,11 @@ dependencies:
     when: (drupal_dependencies is defined and drupal_dependencies)
     tags: [ 'depend::php5', 'depend::php5:drupal', 'depend-of::drupal', 'type::dependency' ]
 
+  - role: debops.composer
+    composer_system_packages: '{{ drupal_composer_packages }}'
+    when: (drupal_dependencies is defined and drupal_dependencies)
+    tags: [ 'depend::composer', 'depend::composer:drupal', 'depend-of::drupal', 'type::dependency' ]
+
   - role: debops.nginx
     nginx_servers: [ '{{ drupal_nginx_server }}' ]
     nginx_upstreams: [ '{{ drupal_nginx_upstream_php5 }}' ]

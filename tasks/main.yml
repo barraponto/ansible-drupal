@@ -49,6 +49,20 @@
     group: '{{ drupal_webserver_user }}'
     mode: '0750'
 
+- name: Setup default settings.php file
+  command: 'cp default.settings.php settings.php'
+  args:
+    chdir: '{{ drupal_install_path }}/sites/default/'
+    creates: '{{ drupal_install_path }}/sites/default/settings.php'
+
+- name: Leave settings.php writeable while Drupal is installed
+  file:
+    path: '{{ drupal_install_path }}/sites/default/settings.php'
+    state: 'file'
+    owner: '{{ drupal_user }}'
+    group: '{{ drupal_webserver_user }}'
+    mode: '0640'
+
 - name: Make sure required directories exist
   file:
     dest: '{{ item }}'
@@ -81,12 +95,11 @@
 #    mode: '0600'
 #  tags: [ 'role::drupal:config', 'role::drupal:database' ]
 
-#- name: Configure cron tasks
-#  template:
-#    src: 'etc/cron.d/drupal.j2'
-#    dest: '/etc/cron.d/drupal'
-#    owner: 'root'
-#    group: 'root'
-#    mode: '0644'
-#  tags: [ 'role::drupal:config' ]
-
+- name: Configure cron tasks
+  template:
+    src: 'etc/cron.d/drupal.j2'
+    dest: '/etc/cron.d/drupal'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::drupal:config' ]

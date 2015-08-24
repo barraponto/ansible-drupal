@@ -14,24 +14,23 @@ drupal_nginx_upstream_php5:
   type: 'php5'
   php5: 'drupal'
 
-# nginx configuration - delete_drupal
+# nginx configuration - drupal
 drupal_nginx_server:
   by_role: 'debops.drupal'
   enabled: True
   type: 'php5'
   name: '{{ drupal_domain }}'
-  root: '{{ drupal_install_path + "/html" }}'
+  root: '{{ drupal_install_path }}'
   filename: 'debops.drupal'
   access_policy: '{{ drupal_nginx_access_policy }}'
   auth_basic_realm: '{{ drupal_nginx_auth_realm }}'
   php5: 'php5_drupal'
 
-  ## XXX TODO REVIEW LATER
+  ## TODO REVIEW
   location:
     '@drupal': |
-      rewrite ^api/v0(.*)$ /api_v0.php/$1 last;
-      rewrite ^(.+)$ /index.php/$1 last;
+      rewrite ^ /index.php;
 
     '/': |
-      try_files $uri $uri/ @drupal;
+      try_files $uri @drupal;
 
