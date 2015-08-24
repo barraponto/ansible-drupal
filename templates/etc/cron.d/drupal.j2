@@ -1,4 +1,4 @@
 # {{ ansible_managed }}
 
-0  *   * * *   {{ drupal_user }}    curl {{ drupal_domain }}/cron.php?cron_key={{ drupal_cron_key }}  >> /dev/null 2>&1
+0  *   * * *   {{ drupal_user }}    /usr/bin/env PATH={{ drupal_cron_path }} COLUMNS=72 drush --root={{ drupal_install_path }} --uri={{ drupal_domain }} --quiet cron
 
