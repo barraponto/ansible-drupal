@@ -48,6 +48,12 @@
     owner: '{{ drupal_user }}'
     group: '{{ drupal_webserver_user }}'
     mode: '0750'
+  with_items: [ '{{ drupal_home }}', '{{ drupal_home }}/sites', '{{ drupal_install_path }}' ]
+
+- name: Setup drupal file ownership
+  command: >
+    chown -R {{ drupal_user }}:{{ drupal_webserver_user }} 
+    {{ drupal_install_path }}
 
 - name: Setup default settings.php file
   command: 'cp default.settings.php settings.php'
