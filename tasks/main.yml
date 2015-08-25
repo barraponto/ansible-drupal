@@ -39,50 +39,37 @@
     update: True
   sudo_user: '{{ drupal_user }}'
   register: drupal_register_source
+  no_log: True
   tags: [ 'role::drupal:source' ]
 
-- name: Update drupal home directory permissions
+- name: Setup drupal home directory permissions
   file:
-    path: '{{ drupal_home }}'
+    path: '{{ item }}'
     state: 'directory'
     owner: '{{ drupal_user }}'
     group: '{{ drupal_webserver_user }}'
     mode: '0750'
-  with_items: [ '{{ drupal_home }}', '{{ drupal_home }}/sites', '{{ drupal_install_path }}' ]
+  with_items: [ '{{ drupal_home }}' ]
 
-- name: Setup drupal file ownership
-  command: >
-    chown -R {{ drupal_user }}:{{ drupal_webserver_user }} 
-    {{ drupal_install_path }}
-
-- name: Setup default settings.php file
-  command: 'cp default.settings.php settings.php'
-  args:
-    chdir: '{{ drupal_install_path }}/sites/default/'
-    creates: '{{ drupal_install_path }}/sites/default/settings.php'
-
-- name: Leave settings.php writeable while Drupal is installed
-  file:
-    path: '{{ drupal_install_path }}/sites/default/settings.php'
-    state: 'file'
-    owner: '{{ drupal_user }}'
-    group: '{{ drupal_webserver_user }}'
-    mode: '0640'
+#- name: Setup drupal file ownership
+#  command: >
+#    chown -R {{ drupal_user }}:{{ drupal_webserver_user }}
+#    {{ drupal_install_path }}
+#  sudo_user: '{{ drupal_user }}'
+#  tags: [ 'role::drupal:source' ]
 
 - name: Make sure required directories exist
   file:
     dest: '{{ item }}'
     state: 'directory'
     owner: '{{ drupal_user }}'
-    group: '{{ drupal_webserver_user }}'
+    group: '{{ drupal_group }}'
     mode: '0750'
   with_items:
     - '{{ drupal_files_path }}'
     - '{{ drupal_private_files_path }}'
-  tags: [ 'role::drupal:config' ]
-
-
-# ---- Configuration ----
+  sudo_user: '{{ drupal_user }}'
+  tags: [ 'role::drupal:source' ]
 
 - name: Create drupal database
   mysql_db:
@@ -91,6 +78,41 @@
   delegate_to: '{{ ansible_local.mariadb.delegate_to }}'
   register: drupal_register_database_status
   tags: [ 'role::drupal:database' ]
+
+- name: Configure cron tasks
+  template:
+    src: 'etc/cron.d/drupal.j2'
+    dest: '/etc/cron.d/drupal'
+    owner: 'root'
+    group: 'root'
+    mode: '0644'
+  tags: [ 'role::drupal:config' ]
+
+# ---- Install ----
+
+- name: Install Drupal
+  shell: >
+    {{ drupal_home }}/bin/drush site-install {{ drupal_profile }}
+    --yes --root={{ drupal_install_path }}
+    --db-url=mysql://{{ drupal_database_user }}:{{ drupal_database_password }}@{{ drupal_database_server }}/{{ drupal_database_name }}
+    --site-mail={{ drupal_site_email }}
+    --site-name={{ drupal_site_name }}
+    --account-mail={{ drupal_admin_email }}
+    --account-name={{ drupal_admin_user }}
+    --account-pass={{ drupal_admin_password }}
+  args:
+    creates: '{{ drupal_install_path }}/sites/default/settings.php'
+  sudo_user: '{{ drupal_user }}'
+  when: (drupal_state|d() and drupal_state == 'installed')
+
+#- name: Setup sites/default/settings.php permissions
+#  file:
+#    path: '{{ drupal_install_path }}/sites/default/settings.php'
+#    state: 'file'
+#    owner: '{{ drupal_user }}'
+#    group: '{{ drupal_webserver_user }}'
+#    mode: '0750'
+#  tags: [ 'role::drupal:source' ]
 
 #- name: Configure drupal
 #  template:
@@ -101,11 +123,3 @@
 #    mode: '0600'
 #  tags: [ 'role::drupal:config', 'role::drupal:database' ]
 
-- name: Configure cron tasks
-  template:
-    src: 'etc/cron.d/drupal.j2'
-    dest: '/etc/cron.d/drupal'
-    owner: 'root'
-    group: 'root'
-    mode: '0644'
-  tags: [ 'role::drupal:config' ]

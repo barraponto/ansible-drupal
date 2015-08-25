@@ -176,6 +176,54 @@ drupal_database_password: "{{
   '/password length=48') }}"
 
 
+# --------------------------
+#   Drupal install
+# --------------------------
+
+# .. envvar:: drupal_state
+#
+# Desired state of drupal. Either installed or deployed.
+drupal_state: 'installed'
+
+
+# .. envvar:: drupal_profile
+#
+# Drupal profile to be installed.
+drupal_profile: 'standard'
+
+
+# .. envvar:: drupal_site_email
+#
+# Drupal site email (used in emails originating from the site)
+drupal_site_email: 'no-reply@{{ drupal_domain[0] }}'
+
+
+# .. envvar:: drupal_site_name
+#
+# Drupal site title.
+drupal_site_name: 'Debops Drupal'
+
+
+# .. envvar:: drupal_admin_user
+#
+# Drupal administrative user name.
+drupal_admin_user: 'admin'
+
+
+# .. envvar:: drupal_admin_email
+#
+# Drupal administrative user email.
+drupal_admin_email: 'admin@{{ drupal_domain[0] }}'
+
+
+# .. envvar:: drupal_admin_password
+#
+# Drupal administrative user email.
+drupal_admin_password: '{{
+  lookup("password", secret + "/credentials/" + ansible_fqdn
+  + "/drupal/admin/" + drupal_admin_user + "/password") }}'
+
+
 # .. envvar:: drupal_cron_path
 #
 # Drush should take a PATH environment variable to work properly
