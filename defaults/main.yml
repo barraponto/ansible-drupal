@@ -176,9 +176,27 @@ drupal_database_password: "{{
   '/password length=48') }}"
 
 
-# --------------------------
-#   Drupal install
-# --------------------------
+# .. envvar:: drupal_database_prefix
+#
+# MariaDB database prefix to use by drupal (used on shared hosts).
+drupal_database_prefix: ''
+
+
+# .. envvar:: drupal_database_dump_source
+#
+# Database dump file in controller
+drupal_database_dump_source: ''
+
+
+# .. envvar:: drupal_database_dump_target
+#
+# MariaDB database dump_target to use by drupal (used on shared hosts).
+drupal_database_dump_target: ''
+
+
+# --------------------
+#   Drupal configuration
+# --------------------
 
 # .. envvar:: drupal_state
 #
@@ -186,10 +204,17 @@ drupal_database_password: "{{
 drupal_state: 'installed'
 
 
-# .. envvar:: drupal_profile
+# .. envvar:: drupal_cron_path
 #
-# Drupal profile to be installed.
-drupal_profile: 'standard'
+# Drush should take a PATH environment variable to work properly
+drupal_cron_path: '{{ drupal_home }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+
+# .. envvar:: drupal_hash_salt
+#
+# Salt for one-time login links and cancel links, form tokens, etc.
+# Will be setup by the installer, but is required on deploys.
+drupal_hash_salt: ''
 
 
 # .. envvar:: drupal_site_email
@@ -202,6 +227,22 @@ drupal_site_email: 'no-reply@{{ drupal_domain[0] }}'
 #
 # Drupal site title.
 drupal_site_name: 'Debops Drupal'
+
+# .. envvar:: drupal_configuration_overrides
+#
+# Drupal variable overrides defined in settings.php
+# Values should be plain strings, for more complex overrides modify the template.
+drupal_configuration_overrides: {}
+
+
+# --------------------------
+#   Drupal install
+# --------------------------
+
+# .. envvar:: drupal_profile
+#
+# Drupal profile to be installed.
+drupal_profile: 'standard'
 
 
 # .. envvar:: drupal_admin_user
@@ -224,7 +265,3 @@ drupal_admin_password: '{{
   + "/drupal/admin/" + drupal_admin_user + "/password") }}'
 
 
-# .. envvar:: drupal_cron_path
-#
-# Drush should take a PATH environment variable to work properly
-drupal_cron_path: '{{ drupal_home }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'

@@ -1,0 +1,10 @@
+---
+
+- name: Configure drupal settings.php
+  template:
+    src: 'home/drupal/settings.php.j2'
+    dest: '{{ drupal_install_path + "/sites/default/settings.php" }}'
+    owner: '{{ drupal_user }}'
+    group: '{{ drupal_group }}'
+    mode: '0444'
+  tags: [ 'role::drupal:config', 'role::drupal:database' ]

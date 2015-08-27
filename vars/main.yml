@@ -34,3 +34,8 @@ drupal_nginx_server:
     '/': |
       try_files $uri @drupal;
 
+
+drupal_deploy_databases:
+  - name: '{{ drupal_database_name }}'
+    source: '{{ drupal_database_dump_source|default(omit) }}'
+    target: '{{ drupal_database_dump_target|default(omit) }}'

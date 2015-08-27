@@ -1,0 +1,15 @@
+---
+
+- name: Run drush install
+  shell: >
+    {{ drupal_home }}/bin/drush site-install {{ drupal_profile }}
+    --yes --root={{ drupal_install_path }}
+    --db-url=mysql://{{ drupal_database_user }}:{{ drupal_database_password }}@{{ drupal_database_server }}/{{ drupal_database_name }}
+    --site-mail={{ drupal_site_email }}
+    --site-name={{ drupal_site_name }}
+    --account-mail={{ drupal_admin_email }}
+    --account-name={{ drupal_admin_user }}
+    --account-pass={{ drupal_admin_password }}
+  args:
+    creates: '{{ drupal_install_path }}/sites/default/settings.php'
+  sudo_user: '{{ drupal_user }}'
