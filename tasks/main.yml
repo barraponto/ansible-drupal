@@ -37,9 +37,10 @@
     dest: '{{ drupal_install_path }}'
     version: '{{ drupal_install_version }}'
     update: True
+    key_file: '{{ drupal_key_file }}'
+    accept_hostkey: True
   sudo_user: '{{ drupal_user }}'
   register: drupal_register_source
-  no_log: True
   tags: [ 'role::drupal:source' ]
 
 - name: Setup drupal home directory permissions
@@ -58,16 +59,23 @@
 #  sudo_user: '{{ drupal_user }}'
 #  tags: [ 'role::drupal:source' ]
 
-- name: Make sure required directories exist
+- name: Make sure public files directory exist
   file:
-    dest: '{{ item }}'
+    path: '{{ drupal_files_path }}'
+    state: 'directory'
+    owner: '{{ drupal_user }}'
+    group: '{{ drupal_group }}'
+    mode: '0755'
+  sudo_user: '{{ drupal_user }}'
+  tags: [ 'role::drupal:source' ]
+
+- name: Make sure private files directory exist
+  file:
+    path: '{{ drupal_private_files_path }}'
     state: 'directory'
     owner: '{{ drupal_user }}'
     group: '{{ drupal_group }}'
     mode: '0750'
-  with_items:
-    - '{{ drupal_files_path }}'
-    - '{{ drupal_private_files_path }}'
   sudo_user: '{{ drupal_user }}'
   tags: [ 'role::drupal:source' ]
 

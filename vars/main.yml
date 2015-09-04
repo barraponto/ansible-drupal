@@ -3,16 +3,16 @@
 # Configuration for php5-fpm pool
 drupal_php5_pool:
   enabled: True
-  name: 'drupal'
+  name: 'drupal-{{ drupal_project_name }}'
   user: '{{ drupal_user }}'
   group: '{{ drupal_group }}'
 
 # nginx configuration - PHP5 upstream
 drupal_nginx_upstream_php5:
   enabled: True
-  name: 'php5_drupal'
+  name: 'php5_drupal-{{ drupal_project_name }}'
   type: 'php5'
-  php5: 'drupal'
+  php5: 'drupal-{{ drupal_project_name }}'
 
 # nginx configuration - drupal
 drupal_nginx_server:
@@ -21,10 +21,10 @@ drupal_nginx_server:
   type: 'php5'
   name: '{{ drupal_domain }}'
   root: '{{ drupal_install_path }}'
-  filename: 'debops.drupal'
+  filename: 'debops.drupal-{{ drupal_project_name }}'
   access_policy: '{{ drupal_nginx_access_policy }}'
   auth_basic_realm: '{{ drupal_nginx_auth_realm }}'
-  php5: 'php5_drupal'
+  php5: 'php5_drupal-{{ drupal_project_name }}'
 
   ## TODO REVIEW
   location:

@@ -26,7 +26,10 @@ dependencies:
         home: '{{ drupal_home }}'
         system: True
         priv_aux: False
-    mariadb_databases: '{{ drupal_deploy_databases if ((drupal_state == "deployed") and (drupal_database_dump_source|d() and drupal_database_dump_target|d())) else [] }}'
+    mariadb_databases: '{{ 
+      drupal_deploy_databases if (
+      (drupal_state == "deployed") and 
+      (drupal_database_dump_source|d() and drupal_database_dump_target|d())) else [] }}'
     when: (drupal_dependencies is defined and drupal_dependencies)
     tags: [ 'depend::mariadb', 'depend::mariadb:drupal', 'depend-of::drupal', 'type::dependency' ]
 

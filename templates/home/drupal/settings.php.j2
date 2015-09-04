@@ -357,7 +357,7 @@ ini_set('session.cookie_lifetime', 2000000);
 # $conf['site_name'] = 'My Drupal site';
 # $conf['theme_default'] = 'garland';
 # $conf['anonymous'] = 'Visitor';
-{% for configuration, value in drupal_configuration_overrides %}
+{% for configuration, value in drupal_configuration_overrides.iteritems() %}
   $conf['{{ configuration }}'] = '{{ value }}';
 {% endfor %}
 

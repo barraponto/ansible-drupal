@@ -5,6 +5,13 @@
 # .. contents:: Sections
 #    :local:
 #
+
+# .. envvar:: drupal_project_name
+#
+# Project name - namespaces drupal install.
+drupal_project_name: 'drupal'
+
+
 # -------------------
 #   System packages
 # -------------------
@@ -48,7 +55,7 @@ drupal_dependencies: True
 # .. envvar:: drupal_domain
 #
 # FQDN address of the drupal webpage, configured in ``nginx``.
-drupal_domain: [ 'drupal.{{ ansible_domain }}' ]
+drupal_domain: [ '{{ drupal_project_name }}.{{ ansible_domain }}' ]
 
 
 # .. envvar:: drupal_nginx_auth_realm
@@ -107,11 +114,17 @@ drupal_home: '{{
   else "/srv/www") + "/" + drupal_user }}'
 
 
+# .. envvar:: drupal_key_file
+#
+# Private key to use on git checkouts, if needed.
+drupal_key_file: '{{ drupal_home }}/.ssh/id_rsa'
+
+
 # .. envvar:: drupal_install_path
 #
 # Path where drupal application source will be installed, this directory
 # should be readable by the webserver.
-drupal_install_path: '{{ drupal_home + "/sites/drupal" }}'
+drupal_install_path: '{{ drupal_home + "/sites/" + drupal_project_name }}'
 
 
 # .. envvar:: drupal_files_path
@@ -124,7 +137,7 @@ drupal_files_path: '{{ drupal_install_path + "/sites/default/files" }}'
 #
 # Path where drupal user-content private files are stored.
 # This directory should be set outside of the webserver root directory.
-drupal_private_files_path: '{{ drupal_home + "/files/drupal" }}'
+drupal_private_files_path: '{{ drupal_home + "/files/" + drupal_project_name }}'
 
 
 # --------------------
@@ -163,7 +176,7 @@ drupal_database_user: 'drupal'
 # .. envvar:: drupal_database_name
 #
 # Name of the MariaDB database to use by drupal.
-drupal_database_name: 'drupal'
+drupal_database_name: 'drupal-{{ drupal_project_name }}'
 
 
 # .. envvar:: drupal_database_password
