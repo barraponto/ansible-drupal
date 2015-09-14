@@ -90,7 +90,7 @@
 - name: Configure cron tasks
   template:
     src: 'etc/cron.d/drupal.j2'
-    dest: '/etc/cron.d/drupal'
+    dest: '/etc/cron.d/drupal-{{ drupal_project_name }}'
     owner: 'root'
     group: 'root'
     mode: '0644'
