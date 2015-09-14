@@ -25,7 +25,7 @@ drupal_base_packages: []
 # .. envvar:: drupal_php5_packages
 #
 # List of PHP5 packages required by drupal
-drupal_php5_packages: [ 'php5-mysql', 'php5-gd', 'php5-json' ]
+drupal_php5_packages: [ 'php5-mysql', 'php5-gd', 'php5-json', 'php5-readline' ]
 
 
 # .. envvar:: drupal_packages
